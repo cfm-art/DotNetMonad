@@ -22,12 +22,5 @@ namespace Functional
         /// <param name="func"></param>
         /// <returns></returns>
         IMonad<U> Fmap<U>(Func<T, U> func);
-
-        /// <summary>
-        /// C#との壁を超える...
-        /// pollute :: m a -> a
-        /// </summary>
-        /// <returns></returns>
-        T Pollute();
     }
 }

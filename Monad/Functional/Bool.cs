@@ -10,6 +10,7 @@ namespace Functional
     /// </summary>
     public class Bool
         : IMonad<bool>
+        , IPollutable<bool>
     {
         private Func<bool> Condition { get; }
 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Functional.Internal;
 
 namespace Functional
 {
@@ -13,6 +14,7 @@ namespace Functional
         : IMonad<R>
         , IEquatable<Either<L, R>>
         , IEquatable<R>
+        , IPollutable<R>
     {
         #region if-else
         public interface RightSentence

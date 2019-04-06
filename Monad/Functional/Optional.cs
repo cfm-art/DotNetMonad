@@ -82,6 +82,7 @@ namespace Functional
         : IEquatable<Optional<T>>
         , IEquatable<T>
         , IMonad<T>
+        , IPollutable<T>
     {
         /// <summary>
         /// 中身を直接参照する

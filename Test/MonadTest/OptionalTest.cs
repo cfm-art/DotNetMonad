@@ -36,7 +36,7 @@ namespace MonadTest
             ).Else(() => {});
             Assert.Equal(1, nothing.OrElse(1));
             Assert.Throws<InvalidOperationException>(
-                () => nothing.Pollute()
+                () => Polluter.Pollute(nothing)
             );
         }
 
@@ -45,10 +45,10 @@ namespace MonadTest
         {
             var maybe1 = Optional.Just(1);
             var maybe2 = maybe1.Bind(o => Optional.Just(o + 1));
-            Assert.Equal(2, maybe2.Pollute());
+            maybe2.IfPresent(t => Assert.Equal(2, t), () => Abort());
 
             var maybeString = maybe1.Bind(_ => Optional.Just("text"));
-            Assert.Equal("text", maybeString.Pollute());
+            maybeString.IfPresent(t => Assert.Equal("text", t), () => Abort());
         }
 
         [Fact]
@@ -56,13 +56,13 @@ namespace MonadTest
         {
             var maybe1 = Optional.Just(1);
             var maybe2 = maybe1.Fmap(o => o + 1);
-            Assert.Equal(2, maybe2.Pollute());
+            Assert.Equal(2, Polluter.Pollute(maybe2));
 
             var m2o = (Optional<int>) maybe2;
             m2o.IfPresent(o => Assert.Equal(2, o));
 
             var maybeString = maybe1.Fmap(_ => "text");
-            Assert.Equal("text", maybeString.Pollute());
+            Assert.Equal("text", Polluter.Pollute(maybeString));
         }
 
         [Fact]
@@ -70,10 +70,10 @@ namespace MonadTest
         {
             var maybe1 = Optional.Just(1);
             var maybe2 = maybe1.Map(o => o + 1);
-            Assert.Equal(2, maybe2.Pollute());
+            maybe2.IfPresent(t => Assert.Equal(2, t), () => Abort());
 
             var maybeString = maybe1.Map(_ => "text");
-            Assert.Equal("text", maybeString.Pollute());
+            maybeString.IfPresent(t => Assert.Equal("text", t), () => Abort());
         }
 
         [Fact]
