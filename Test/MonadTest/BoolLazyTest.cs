@@ -4,7 +4,7 @@ using Functional;
 
 namespace MonadTest
 {
-    public class BoolTest
+    public class BoolLazyTest
     {
         private static void Abort()
         {
@@ -14,7 +14,7 @@ namespace MonadTest
         [Fact]
         public void Test_TrueValue()
         {
-            var trueValue = Bool.True();
+            var trueValue = BoolLazy.True();
 
             var isCalled = false;
             trueValue.When(() => {isCalled = true;}).Else(() => Abort());
@@ -39,7 +39,7 @@ namespace MonadTest
         [Fact]
         public void Test_FalseValue()
         {
-            var falseValue = Bool.False();
+            var falseValue = BoolLazy.False();
 
             var isCalled = false;
             falseValue.When(() => Abort()).Else(() => {isCalled = true;});
@@ -69,7 +69,12 @@ namespace MonadTest
         [Fact]
         public void Test_TrueFunction()
         {
-            var trueValue = Bool.Return(() => true);
+            var once = true;
+            var trueValue = BoolLazy.Return(() => {
+                if (!once) { Abort(); }
+                once = false;
+                return true;
+            });
 
             var isCalled = false;
             trueValue.When(() => {isCalled = true;}).Else(() => Abort());
@@ -94,7 +99,12 @@ namespace MonadTest
         [Fact]
         public void Test_FalseFunction()
         {
-            var falseValue = Bool.Return(() => false);
+            var once = true;
+            var falseValue = BoolLazy.Return(() => {
+                if (!once) { Abort(); }
+                once = false;
+                return false;
+            });
 
             var isCalled = false;
             falseValue.When(() => Abort()).Else(() => {isCalled = true;});

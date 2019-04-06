@@ -290,7 +290,7 @@ namespace Functional
         public Either<L, U> Map<U>(Func<R, U> func)
             => IsRight ? Either<L, U>.Right(func(RightValue)) : Either<L, U>.Left(LeftValue);
 
-        public R Pollute()
+        R IPollutable<R>.Pollute()
             => IsRight ? RightValue : throw new InvalidOperationException("Either is not right");
         #endregion
     }

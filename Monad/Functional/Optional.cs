@@ -14,7 +14,7 @@ namespace Functional
         public static Optional<W> Apply<U, V, W>(Optional<U> left, Optional<V> right, Func<U, V, W> action)
         {
             if (!left.HasValue || !right.HasValue) { return Optional<W>.Nothing; }
-            return Optional<W>.Just(action(left.Pollute(), right.Pollute()));
+            return Optional<W>.Just(action(Polluter.Pollute(left), Polluter.Pollute(right)));
         }
 
         /// <summary>
@@ -25,7 +25,7 @@ namespace Functional
         /// <returns></returns>
         public static IEnumerable<U> MapPollute<U>(IEnumerable<Optional<U>> list)
         {
-            return (from x in list where x.HasValue select x.Pollute());
+            return (from x in list where x.HasValue select Polluter.Pollute(x));
         }
 
         /// <summary>
@@ -346,7 +346,7 @@ namespace Functional
         public Optional<U> Map<U>(Func<T, U> func)
             => HasValue ? Optional<U>.Just(func(Value)) : Optional<U>.Nothing;
 
-        public T Pollute() => HasValue ? Value : throw new InvalidOperationException("Optional is nothing");
+        T IPollutable<T>.Pollute() => HasValue ? Value : throw new InvalidOperationException("Optional is nothing");
         #endregion
     }
 }

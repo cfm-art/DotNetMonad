@@ -8,20 +8,31 @@ namespace Functional
     /// <summary>
     /// 分岐
     /// </summary>
-    public class Bool
+    public class BoolLazy
         : IMonad<bool>
         , IPollutable<bool>
     {
-        private bool Condition { get; }
+        private Func<bool> condition_ { get; set; }
+        private bool cache_;
 
-        private Bool(bool condition) => Condition = condition;
-        private Bool(Func<bool> condition) => Condition = condition();
+        private bool Condition
+        {
+            get {
+                if (condition_ == null) { return cache_; }
+                cache_ = condition_();
+                condition_ = null;
+                return cache_;
+            }
+        }
 
-        public static Bool True() => new Bool(true);
-        public static Bool False() => new Bool(false);
+        private BoolLazy(bool condition) => condition_ = () => condition;
+        private BoolLazy(Func<bool> condition) => condition_ = condition;
 
-        public static Bool Return(bool condition) => new Bool(condition);
-        public static Bool Return(Func<bool> condition) => new Bool(condition);
+        public static BoolLazy True() => new BoolLazy(true);
+        public static BoolLazy False() => new BoolLazy(false);
+
+        public static BoolLazy Return(bool condition) => new BoolLazy(condition);
+        public static BoolLazy Return(Func<bool> condition) => new BoolLazy(condition);
 
         public IMonad<U> Bind<U>(Func<bool, IMonad<U>> func)
             => Condition ? func(true) : Optional<U>.Nothing;
