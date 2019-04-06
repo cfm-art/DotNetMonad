@@ -98,8 +98,8 @@ namespace Functional
         }
         #endregion
 
-        public L LeftValue { get; }
-        public R RightValue { get; }
+        internal L LeftValue { get; }
+        internal R RightValue { get; }
         private bool IsLeft { get; }
         private bool IsRight => !IsLeft;
 
