@@ -6,28 +6,33 @@ namespace MonadTest
 {
     public class OptionalTest
     {
+        private static void Abort()
+        {
+            throw new Exception("abort.");            
+        }
+
         [Fact]
         public void Test_Nothhing()
         {
             var nothing = Optional.Nothing<int>();
             nothing.Bind(o => {
-                throw new Exception("abort.");
+                Abort();
                 return Optional.Nothing<int>();
             });
             nothing.Fmap(o => {
-                throw new Exception("abort.");
+                Abort();
                 return 1;
             });
             nothing.Map(o => {
-                throw new Exception("abort.");
+                Abort();
                 return 1;
             });
             nothing.IfPresent(
-                _ => throw new Exception(""),
+                _ => Abort(),
                 () => {}
             );
             nothing.IfPresent(
-                _ => throw new Exception("")
+                _ => Abort()
             ).Else(() => {});
             Assert.Equal(1, nothing.OrElse(1));
             Assert.Throws<InvalidOperationException>(
@@ -78,7 +83,7 @@ namespace MonadTest
             maybe1.IfPresent(
                 one => Assert.Equal(1, one)
             ).Else(
-                () => throw new Exception("")
+                () => Abort()
             );
 
             var two = maybe1.IfPresent(
@@ -90,7 +95,7 @@ namespace MonadTest
 
             maybe1.IfPresent(
                 one => Assert.Equal(1, one),
-                () => throw new Exception("")
+                () => Abort()
             );
 
             var three = maybe1.IfPresent(

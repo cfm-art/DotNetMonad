@@ -2,6 +2,7 @@ using Functional.Internal;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Functional
 {
@@ -27,9 +28,49 @@ namespace Functional
             return (from x in list where x.HasValue select x.Pollute());
         }
 
+        /// <summary>
+        /// Maybe Task T -> Task Maybe T
+        /// 
+        /// usecase: Optional<T> `bind` T -> Optioanl<Task<Optioanl<T>>>
+        /// Taskの中にOptionalが包まれている場合にMapなどでTaskが一生つきまとうため、Taskだけを剥がすためのユーティリティ。
+        /// var maybe = await Optional.Asynchronous(maybeTask); // :: Taskを剥がしOptional<T>へ
+        /// </summary>
+        public static async Task<Optional<T>> Asynchronous<T>(Optional<Task<T>> maybeTask)
+            where T : class
+            => await maybeTask.IfPresent(
+                async task => Optional.Maybe(await task),
+                () => Task.FromResult(Optional<T>.Nothing));
+
+        /// <summary>
+        /// 長さ0もしくは1の配列へ
+        /// </summary>
+        public static IEnumerable<T> ToEnumerable<T>(Optional<T> maybeT)
+            => maybeT.IfPresent(v => new T[] { v }, () => Enumerable.Empty<T>());
+
+        /// <summary>
+        /// リストの先頭をMaybeへ
+        /// </summary>
+        public static Optional<T> First<T>(IEnumerable<T> list)
+            => Maybe(list.FirstOrDefault());
+
+        /// <summary>
+        /// nullかもしれない
+        /// </summary>
         public static Optional<T> Maybe<T>(T value) => Optional<T>.Maybe(value);
+
+        /// <summary>
+        /// nillではない
+        /// </summary>
         public static Optional<T> Just<T>(T value) => Optional<T>.Just(value);
+
+        /// <summary>
+        /// Just
+        /// </summary>
         public static Optional<T> Return<T>(T value) => Optional<T>.Just(value);
+
+        /// <summary>
+        /// null
+        /// </summary>
         public static Optional<T> Nothing<T>() => Optional<T>.Nothing;
     }
 
@@ -156,8 +197,8 @@ namespace Functional
         /// <param name="value"></param>
         /// <returns></returns>
         public Optional<U> OrElse<U>(Optional<U> value)
-            where U: T
-            => HasValue ? Optional<U>.Just((U) Value) : value;
+            where U : T
+            => HasValue ? Optional<U>.Just((U)Value) : value;
 
         /// <summary>
         /// 中身を代替を指定して取得
