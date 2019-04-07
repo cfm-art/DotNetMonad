@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Functional.Internal;
+using CfmArt.Functional.Internal;
 
-namespace Functional
+namespace CfmArt.Functional
 {
     /// <summary>
     /// either

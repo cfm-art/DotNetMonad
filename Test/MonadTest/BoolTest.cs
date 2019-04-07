@@ -1,6 +1,6 @@
 using System;
 using Xunit;
-using Functional;
+using CfmArt.Functional;
 
 namespace MonadTest
 {

@@ -1,6 +1,6 @@
-using Functional.Internal;
+using CfmArt.Functional.Internal;
 
-namespace Functional
+namespace CfmArt.Functional
 {
     /// <summary>
     /// Monadに隠蔽されている値を取得する

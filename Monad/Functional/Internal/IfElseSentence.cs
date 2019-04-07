@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Functional.Internal
+namespace CfmArt.Functional.Internal
 {
     public class IfElseSentence
     {

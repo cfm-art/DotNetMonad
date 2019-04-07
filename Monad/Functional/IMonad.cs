@@ -1,6 +1,6 @@
 using System;
 
-namespace Functional
+namespace CfmArt.Functional
 {
     /// <summary>
     /// Monadを無理やり抽象化
