@@ -160,7 +160,7 @@ namespace MonadTest
             Assert.Equal(1, Polluter.Pollute(o2));
 
             var o3 = right.Map(_ => { return 1; });
-            Assert.Equal(1, Polluter.Pollute(o3));
+            Assert.Equal(1, Polluter.Pollute(o3).PolluteRight());
         }
     }
 }

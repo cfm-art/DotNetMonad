@@ -155,11 +155,9 @@ namespace CfmArt.Functional
         /// <param name="then"></param>
         /// <param name="elseThen"></param>
         public U IfLeft<U>(Func<L, U> then, Func<R, U> elseThen)
-        {
-            return IsLeft
+            => IsLeft
                 ? then(LeftValue)
                 : elseThen(RightValue);
-        }
         #endregion
 
         #region if right
@@ -207,11 +205,9 @@ namespace CfmArt.Functional
         /// <param name="then"></param>
         /// <param name="elseThen"></param>
         public U IfRight<U>(Func<R, U> then, Func<L, U> elseThen)
-        {
-            return IsRight
+            => IsRight
                 ? then(RightValue)
                 : elseThen(LeftValue);
-        }
         #endregion
 
         /// <summary>
@@ -244,11 +240,9 @@ namespace CfmArt.Functional
 
         #region IEquatable
         public override int GetHashCode()
-        {
-            return (IsLeft
+            => (IsLeft
                 ? LeftValue?.GetHashCode()
                 : RightValue?.GetHashCode()) ?? 0;
-        }
 
         public override bool Equals(object obj)
         {

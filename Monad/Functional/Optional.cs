@@ -2,78 +2,9 @@ using CfmArt.Functional.Internal;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace CfmArt.Functional
 {
-    public static class Optional
-    {
-        /// <summary>
-        /// left `action` right
-        /// </summary>
-        public static Optional<W> Apply<U, V, W>(Optional<U> left, Optional<V> right, Func<U, V, W> action)
-        {
-            if (!left.HasValue || !right.HasValue) { return Optional<W>.Nothing; }
-            return Optional<W>.Just(action(Polluter.Pollute(left), Polluter.Pollute(right)));
-        }
-
-        /// <summary>
-        /// Maybeのリストから値を持つもののリストへ変換
-        /// </summary>
-        /// <typeparam name="U"></typeparam>
-        /// <param name="list"></param>
-        /// <returns></returns>
-        public static IEnumerable<U> MapPollute<U>(IEnumerable<Optional<U>> list)
-        {
-            return (from x in list where x.HasValue select Polluter.Pollute(x));
-        }
-
-        /// <summary>
-        /// Maybe Task T -> Task Maybe T
-        /// 
-        /// usecase: Optional<T> `bind` T -> Optioanl<Task<Optioanl<T>>>
-        /// Taskの中にOptionalが包まれている場合にMapなどでTaskが一生つきまとうため、Taskだけを剥がすためのユーティリティ。
-        /// var maybe = await Optional.Asynchronous(maybeTask); // :: Taskを剥がしOptional<T>へ
-        /// </summary>
-        public static async Task<Optional<T>> Asynchronous<T>(Optional<Task<T>> maybeTask)
-            where T : class
-            => await maybeTask.IfPresent(
-                async task => Optional.Maybe(await task),
-                () => Task.FromResult(Optional<T>.Nothing));
-
-        /// <summary>
-        /// 長さ0もしくは1の配列へ
-        /// </summary>
-        public static IEnumerable<T> ToEnumerable<T>(Optional<T> maybeT)
-            => maybeT.IfPresent(v => new T[] { v }, () => Enumerable.Empty<T>());
-
-        /// <summary>
-        /// リストの先頭をMaybeへ
-        /// </summary>
-        public static Optional<T> First<T>(IEnumerable<T> list)
-            => Maybe(list.FirstOrDefault());
-
-        /// <summary>
-        /// nullかもしれない
-        /// </summary>
-        public static Optional<T> Maybe<T>(T value) => Optional<T>.Maybe(value);
-
-        /// <summary>
-        /// nillではない
-        /// </summary>
-        public static Optional<T> Just<T>(T value) => Optional<T>.Just(value);
-
-        /// <summary>
-        /// Just
-        /// </summary>
-        public static Optional<T> Return<T>(T value) => Optional<T>.Just(value);
-
-        /// <summary>
-        /// null
-        /// </summary>
-        public static Optional<T> Nothing<T>() => Optional<T>.Nothing;
-    }
-
     /// <summary>
     /// Maybe Monad
     /// </summary>
@@ -110,7 +41,7 @@ namespace CfmArt.Functional
         /// </summary>
         /// <param name="instance"></param>
         /// <returns></returns>
-        public static Optional<T> Just(T instance)
+        internal static Optional<T> Just(T instance)
             => instance == null
                 ? throw new ArgumentNullException()
                 : new Optional<T>(instance, true);
@@ -120,7 +51,7 @@ namespace CfmArt.Functional
         /// </summary>
         /// <param name="instance"></param>
         /// <returns></returns>
-        public static Optional<T> Maybe(T instance)
+        internal static Optional<T> Maybe(T instance)
             => instance == null
                 ? Nothing
                 : new Optional<T>(instance, true);
@@ -175,11 +106,9 @@ namespace CfmArt.Functional
         /// <param name="then"></param>
         /// <param name="elseThen"></param>
         public U IfPresent<U>(Func<T, U> then, Func<U> elseThen)
-        {
-            return HasValue
+            => HasValue
                 ? then(Value)
                 : elseThen();
-        }
 
         /// <summary>
         /// 中身を代替を指定して取得
@@ -261,27 +190,21 @@ namespace CfmArt.Functional
         /// <param name="rhs"></param>
         /// <returns></returns>
         public static bool operator !=(Optional<T> lhs, Optional<T> rhs)
-        {
-            return !(lhs == rhs);
-        }
+            => !(lhs == rhs);
 
         /// <summary>
         /// 中身のハッシュ値
         /// </summary>
         /// <returns></returns>
         public override int GetHashCode()
-        {
-            return HasValue ? Value.GetHashCode() : 0;
-        }
+            => ToString().GetHashCode();
 
         /// <summary>
         /// 中身の文字列表現
         /// </summary>
         /// <returns></returns>
         public override string ToString()
-        {
-            return HasValue ? Value.ToString() : "";
-        }
+            => HasValue ? "Just " + Value.ToString() : "Nothing";
 
         /// <summary>
         /// 比較
@@ -307,9 +230,7 @@ namespace CfmArt.Functional
         /// <param name="other"></param>
         /// <returns></returns>
         public bool Equals(Optional<T> other)
-        {
-            return this == other;
-        }
+            => this == other;
 
         /// <summary>
         /// 比較
@@ -317,9 +238,7 @@ namespace CfmArt.Functional
         /// <param name="other"></param>
         /// <returns></returns>
         public bool Equals(T other)
-        {
-            return HasValue ? Value.Equals(other) : (other == null);
-        }
+            => HasValue ? Value.Equals(other) : (other == null);
 
         #region IMonad
         /// <summary>
