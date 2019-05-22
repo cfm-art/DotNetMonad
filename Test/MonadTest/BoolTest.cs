@@ -69,6 +69,8 @@ namespace MonadTest
         [Fact]
         public void Test_TrueFunction()
         {
+            // Boolを返却する関数をしていする。
+            // 関数はこのタイミングで即時に評価される。
             var trueValue = Bool.Return(() => true);
 
             var isCalled = false;

@@ -17,18 +17,22 @@ namespace MonadTest
             var trueValue = BoolLazy.True();
 
             var isCalled = false;
+            // Bool.When().Else()で分岐
             trueValue.When(() => {isCalled = true;}).Else(() => Abort());
             Assert.True(isCalled);
 
+            // Bool.When(then:, elseThen:)で分岐。一時変数を作らない分こちらの方がパフォーマンスは良いはず。
             var one = trueValue.When(() => 1, () => 0);
             Assert.Equal(1, one);
 
+            // Bindは別のIMonadを返却できる
             var t = trueValue.Bind(_ => {
                 Assert.True(_);
                 return Bool.False();
             });
             Assert.False(Polluter.Pollute(t));
 
+            // Fmapは別のBoolLazyを返却できる
             var t2 = trueValue.Fmap(_ => {
                 Assert.True(_);
                 return false;
@@ -70,6 +74,8 @@ namespace MonadTest
         public void Test_TrueFunction()
         {
             var once = true;
+            // boolを返却する関数を元に生成する。
+            // 関数の評価は次のWhenなどまで遅延される。
             var trueValue = BoolLazy.Return(() => {
                 if (!once) { Abort(); }
                 once = false;
