@@ -42,6 +42,20 @@ left.IfLeft(
 );
 ```
 
+### StateTask
+.NetのTaskをラップしたStateモナド。  
+Optionalを返却するTaskを直列化可能。
+
+```cs
+// 複数のTaskを直列化
+var state = StateTask
+                .From(() => Task.FromResult(Optional.Just(1)))
+                .Map(() => Task.FromResut(Optional.Just(2)));
+var result = await state.Awaitor;
+// result.Item1 == 1;
+// result.Item2 == 2;
+```
+
 ### Bool
 Bool専用のOptional。
 
