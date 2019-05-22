@@ -104,5 +104,36 @@ namespace MonadTest
             );
             Assert.Equal(3, three);
         }
+
+        [Fact]
+        public void Test_MonadLaw()
+        {
+            // return x >>= f == f x
+            // m >>= return == m
+            // (m >>= f) >>= g == m >>= (\x -> f x >>= g)
+
+            {   // return x >>= f == f x
+                Func<int, Optional<int>> func = i => Optional.Just(i + 1);
+                var result1 = func(10);
+                var result2 = Optional.Return(10).Bind(func);
+                Assert.Equal(result1, result2);
+            }
+
+            {   // m >>= return == m
+                var result1 = Optional.Just(10);
+                var result2 = result1.Bind(Optional.Return);
+                Assert.Equal(result1, result2);
+            }
+
+            {   // (m >>= f) >>= g == m >>= (\x -> f x >>= g)
+                Func<int, Optional<int>> f = i => Optional.Just(i + 1);
+                Func<int, Optional<int>> g = i => Optional.Just(i + 10);
+                var m = Optional.Just(10);
+
+                var result1 = m.Bind(f).Bind(g);
+                var result2 = m.Bind(i => f(i).Bind(g));
+                Assert.Equal(result1, result2);
+            }
+        }
     }
 }

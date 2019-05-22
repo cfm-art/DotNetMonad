@@ -13,7 +13,8 @@ namespace CfmArt.Functional
     }
 
     /// <summary>
-    /// Optionalを返すTask
+    /// Optionalを返すTask用。
+    /// ツライTaskをなんとかするためのもの。
     /// </summary>
     public class StateTask<T>
         : IMonad<T>
@@ -64,7 +65,7 @@ namespace CfmArt.Functional
             => new StateTask<V>(Next(runState, newState));
 
         public IMonad<U> Bind<U>(Func<T, IMonad<U>> func)
-            => Map(t => Task.FromResult((Optional<U>)func(t)));
+            => Map(t => ((StateTask<U>) func(t)).Awaitor);
 
         public IMonad<U> Fmap<U>(Func<T, U> func)
             => Map(t => Task.FromResult(Optional.Maybe(func(t))));

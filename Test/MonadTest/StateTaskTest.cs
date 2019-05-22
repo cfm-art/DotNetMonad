@@ -145,5 +145,36 @@ namespace MonadTest
             Assert.True(called1);
             Assert.False(called2);
         }
+
+        [Fact]
+        public void Test_MonadLaw()
+        {
+            // return x >>= f == f x
+            // m >>= return == m
+            // (m >>= f) >>= g == m >>= (\x -> f x >>= g)
+
+            {   // return x >>= f == f x
+                Func<int, StateTask<int>> func = i => StateTask.Return(DummyTask(i));
+                var result1 = func(10);
+                var result2 = StateTask.Return(DummyTask(10)).Bind(func) as StateTask<int>;
+                Assert.Equal(result1.Awaitor.Result, result2.Awaitor.Result);
+            }
+
+            {   // m >>= return == m
+                var result1 = StateTask.Return(DummyTask(10));
+                var result2 = result1.Bind(i => StateTask.Return(DummyTask(i))) as StateTask<int>;
+                Assert.Equal(result1.Awaitor.Result, result2.Awaitor.Result);
+            }
+
+            {   // (m >>= f) >>= g == m >>= (\x -> f x >>= g)
+                Func<int, StateTask<int>> f = i => StateTask.Return(DummyTask(i + 1));
+                Func<int, StateTask<int>> g = i => StateTask.Return(DummyTask(i + 10));
+                var m = StateTask.Return(DummyTask(10));
+
+                var result1 = m.Bind(f).Bind(g) as StateTask<int>;
+                var result2 = m.Bind(i => f(i).Bind(g)) as StateTask<int>;
+                Assert.Equal(result1.Awaitor.Result, result2.Awaitor.Result);
+            }
+        }        
     }
 }
