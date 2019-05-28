@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using CfmArt.Functional.Internal;
 
 namespace CfmArt.Functional
@@ -46,12 +47,19 @@ namespace CfmArt.Functional
         public IMonad<U> Bind<U>(Func<bool, IMonad<U>> func)
             => Condition ? func(true) : Optional<U>.Nothing;
 
+        public Task<IMonad<U>> Bind<U>(Func<bool, Task<IMonad<U>>> func)
+            => Condition ? func(true) : Task.FromResult((IMonad<U>) Optional<U>.Nothing);
+
         public IMonad<U> Fmap<U>(Func<bool, U> func)
             => Condition ? func(true) : Optional<U>.Nothing;
 
         public MonadU Bind<U, MonadU>(Func<bool, MonadU> func)
             where MonadU : IMonad<U>
             => Condition ? func(true) : default(MonadU);
+
+        public Task<MonadU> Bind<U, MonadU>(Func<bool, Task<MonadU>> func)
+            where MonadU : IMonad<U>
+            => Condition ? func(true) : Task.FromResult(default(MonadU));
 
         bool IPollutable<bool>.Pollute() => Condition;
 

@@ -2,6 +2,7 @@ using CfmArt.Functional.Internal;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace CfmArt.Functional
 {
@@ -253,6 +254,12 @@ namespace CfmArt.Functional
         public Optional<U> Bind<U>(Func<T, Optional<U>> func)
             => HasValue ? func(Value) : Optional<U>.Nothing;
 
+        public Task<IMonad<U>> BindAsync<U>(Func<T, Task<IMonad<U>>> func)
+            => HasValue ? func(Value) : Task.FromResult((IMonad<U>) Optional<U>.Nothing);
+
+        public Task<Optional<U>> BindAsync<U>(Func<T, Task<Optional<U>>> func)
+            => HasValue ? func(Value) : Task.FromResult(Optional<U>.Nothing);
+
         /// <summary>
         /// fmap :: (a -> b) -> m a -> m b
         /// </summary>
@@ -268,6 +275,10 @@ namespace CfmArt.Functional
         public MonadU Bind<U, MonadU>(Func<T, MonadU> func)
             where MonadU : IMonad<U>
             => HasValue ? func(Value) : default(MonadU);
+
+        public Task<MonadU> BindAsync<U, MonadU>(Func<T, Task<MonadU>> func)
+            where MonadU : IMonad<U>
+            => HasValue ? func(Value) : Task.FromResult(default(MonadU));
 
         T IPollutable<T>.Pollute() => HasValue ? Value : throw new InvalidOperationException("Optional is nothing");
         #endregion

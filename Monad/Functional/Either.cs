@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using CfmArt.Functional.Internal;
 
 namespace CfmArt.Functional
@@ -302,6 +303,12 @@ namespace CfmArt.Functional
         public Either<L, U> Bind<U>(Func<R, Either<L, U>> func)
             => IsRight ? func(RightValue) : Either<L, U>.Left(LeftValue);
 
+        public Task<IMonad<U>> BindAsync<U>(Func<R, Task<IMonad<U>>> func)
+            => IsRight ? func(RightValue) : Task.FromResult((IMonad<U>) Either<L, U>.Left(LeftValue));
+
+        public Task<Either<L, U>> BindAsync<U>(Func<R, Task<Either<L, U>>> func)
+            => IsRight ? func(RightValue) : Task.FromResult(Either<L, U>.Left(LeftValue));
+
         public IMonad<U> Fmap<U>(Func<R, U> func)
             => IsRight ? Either<L, U>.Right(func(RightValue)) : Either<L, U>.Left(LeftValue);
 
@@ -311,6 +318,10 @@ namespace CfmArt.Functional
         public MonadU Bind<U, MonadU>(Func<R, MonadU> func)
             where MonadU : IMonad<U>
             => IsRight ? func(RightValue) : default(MonadU);
+
+        public Task<MonadU> BindAsync<U, MonadU>(Func<R, Task<MonadU>> func)
+            where MonadU : IMonad<U>
+            => IsRight ? func(RightValue) : Task.FromResult(default(MonadU));
 
         R IPollutable<R>.Pollute()
             => IsRight ? RightValue : throw new InvalidOperationException("Either is not right");

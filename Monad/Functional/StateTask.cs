@@ -72,11 +72,21 @@ namespace CfmArt.Functional
         public IMonad<U> Bind<U>(Func<T, IMonad<U>> func)
             => Map(t => ((StateTask<U>) func(t)).Awaitor);
 
+        public StateTask<U> BindAsync<U>(Func<T, Task<U>> func)
+            => Map(func);
+
+        public Task<IMonad<U>> BindAsync<U>(Func<T, Task<IMonad<U>>> func)
+            => Map(t => func(t)).Awaitor;
+
         public IMonad<U> Fmap<U>(Func<T, U> func)
             => Map(t => Task.FromResult(func(t)));
 
         public MonadU Bind<U, MonadU>(Func<T, MonadU> func)
             where MonadU : IMonad<U>
             => throw new NotImplementedException();
+
+        public Task<MonadU> BindAsync<U, MonadU>(Func<T, Task<MonadU>> func)
+            where MonadU : IMonad<U>
+            => Map(func).Awaitor;
     }
 }
