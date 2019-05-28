@@ -44,11 +44,14 @@ left.IfLeft(
 
 ### StateTask
 .NetのTaskをラップしたStateモナド。  
+
+### MaybeTask
+.NetのTaskをラップしたStateモナド。  
 Optionalを返却するTaskを直列化可能。
 
 ```cs
 // 複数のTaskを直列化
-var state = StateTask
+var state = MaybeTask
                 .From(() => Task.FromResult(Optional.Just(1)))
                 .Map(() => Task.FromResut(Optional.Just(2)));
 var result = await state.Awaitor;
