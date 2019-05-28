@@ -7,7 +7,7 @@ namespace MonadTest
 {
     public class StateTaskTest
     {
-       private static void Abort()
+        private static void Abort()
         {
             throw new Exception("abort.");            
         }
@@ -156,13 +156,13 @@ namespace MonadTest
             {   // return x >>= f == f x
                 Func<int, StateTask<int>> func = i => StateTask.Return(DummyTask(i));
                 var result1 = func(10);
-                var result2 = StateTask.Return(DummyTask(10)).Bind(func) as StateTask<int>;
+                var result2 = StateTask.Return(DummyTask(10)).Bind(func);
                 Assert.Equal(result1.Awaitor.Result, result2.Awaitor.Result);
             }
 
             {   // m >>= return == m
                 var result1 = StateTask.Return(DummyTask(10));
-                var result2 = result1.Bind(i => StateTask.Return(DummyTask(i))) as StateTask<int>;
+                var result2 = result1.Bind(i => StateTask.Return(DummyTask(i)));
                 Assert.Equal(result1.Awaitor.Result, result2.Awaitor.Result);
             }
 
@@ -171,8 +171,8 @@ namespace MonadTest
                 Func<int, StateTask<int>> g = i => StateTask.Return(DummyTask(i + 10));
                 var m = StateTask.Return(DummyTask(10));
 
-                var result1 = m.Bind(f).Bind(g) as StateTask<int>;
-                var result2 = m.Bind(i => f(i).Bind(g)) as StateTask<int>;
+                var result1 = m.Bind(f).Bind(g);
+                var result2 = m.Bind(i => f(i).Bind(g));
                 Assert.Equal(result1.Awaitor.Result, result2.Awaitor.Result);
             }
         }        

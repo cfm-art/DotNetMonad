@@ -124,14 +124,14 @@ namespace CfmArt.Functional
 
         internal L LeftValue { get; }
         internal R RightValue { get; }
-        private bool IsLeft { get; }
-        private bool IsRight => !IsLeft;
+        private bool IsRight { get; }
+        private bool IsLeft => !IsRight;
 
         private Either(L left, R right, bool isLeft)
         {
             LeftValue = left;
             RightValue = right;
-            IsLeft = isLeft;
+            IsRight = !isLeft;
         }
 
         #region if left
@@ -307,6 +307,10 @@ namespace CfmArt.Functional
 
         public Either<L, U> Map<U>(Func<R, U> func)
             => IsRight ? Either<L, U>.Right(func(RightValue)) : Either<L, U>.Left(LeftValue);
+
+        public MonadU Bind<U, MonadU>(Func<R, MonadU> func)
+            where MonadU : IMonad<U>
+            => IsRight ? func(RightValue) : default(MonadU);
 
         R IPollutable<R>.Pollute()
             => IsRight ? RightValue : throw new InvalidOperationException("Either is not right");

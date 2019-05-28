@@ -8,7 +8,7 @@ namespace CfmArt.Functional
     /// <summary>
     /// 分岐
     /// </summary>
-    public class BoolLazy
+    public struct BoolLazy
         : IMonad<bool>
         , IPollutable<bool>
     {
@@ -25,8 +25,17 @@ namespace CfmArt.Functional
             }
         }
 
-        private BoolLazy(bool condition) => condition_ = () => condition;
-        private BoolLazy(Func<bool> condition) => condition_ = condition;
+        private BoolLazy(bool condition)
+        {
+            cache_ = false;
+            condition_ = () => condition;
+        }
+
+        private BoolLazy(Func<bool> condition)
+        {
+            cache_ = false;
+            condition_ = condition;
+        }
 
         public static BoolLazy True() => new BoolLazy(true);
         public static BoolLazy False() => new BoolLazy(false);
@@ -39,6 +48,10 @@ namespace CfmArt.Functional
 
         public IMonad<U> Fmap<U>(Func<bool, U> func)
             => Condition ? func(true) : Optional<U>.Nothing;
+
+        public MonadU Bind<U, MonadU>(Func<bool, MonadU> func)
+            where MonadU : IMonad<U>
+            => Condition ? func(true) : default(MonadU);
 
         bool IPollutable<bool>.Pollute() => Condition;
 

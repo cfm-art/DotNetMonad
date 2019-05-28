@@ -10,20 +10,27 @@ namespace CfmArt.Functional
 
         public static StateTask<T> From<T>(Task<Optional<T>> task)
             => new StateTask<T>(task);
+
+        public static StateTask<T> Return<T>(Func<Task<Optional<T>>> task)
+            => new StateTask<T>(task());
+
+        public static StateTask<T> From<T>(Func<Task<Optional<T>>> task)
+            => new StateTask<T>(task());
     }
 
     /// <summary>
     /// Optionalを返すTask用。
     /// ツライTaskをなんとかするためのもの。
     /// </summary>
-    public class StateTask<T>
+    public struct StateTask<T>
         : IMonad<T>
     {
-        public Task<Optional<T>> Awaitor { get; }
+        private Task<Optional<T>> awaitor_ { get; }
+        public Task<Optional<T>> Awaitor => awaitor_ ?? Task.FromResult(Optional<T>.Nothing);
 
         public StateTask(Task<Optional<T>> task)
         {
-            Awaitor = task;
+            awaitor_ = task;
         }
 
         private async Task<Optional<(T, U)>> Next<U>(Task<Optional<U>> newState)
@@ -64,10 +71,17 @@ namespace CfmArt.Functional
                 Func<T, U, Optional<V>> newState)
             => new StateTask<V>(Next(runState, newState));
 
+        public StateTask<U> Bind<U>(Func<T, StateTask<U>> func)
+            => Map(t => func(t).Awaitor);
+
         public IMonad<U> Bind<U>(Func<T, IMonad<U>> func)
             => Map(t => ((StateTask<U>) func(t)).Awaitor);
 
         public IMonad<U> Fmap<U>(Func<T, U> func)
             => Map(t => Task.FromResult(Optional.Maybe(func(t))));
+
+        public MonadU Bind<U, MonadU>(Func<T, MonadU> func)
+            where MonadU : IMonad<U>
+            => throw new NotImplementedException();
     }
 }

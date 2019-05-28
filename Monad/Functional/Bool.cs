@@ -8,7 +8,7 @@ namespace CfmArt.Functional
     /// <summary>
     /// 分岐
     /// </summary>
-    public class Bool
+    public struct Bool
         : IMonad<bool>
         , IPollutable<bool>
     {
@@ -28,6 +28,10 @@ namespace CfmArt.Functional
 
         public IMonad<U> Fmap<U>(Func<bool, U> func)
             => Condition ? func(true) : Optional<U>.Nothing;
+
+        public MonadU Bind<U, MonadU>(Func<bool, MonadU> func)
+            where MonadU : IMonad<U>
+            => Condition ? func(true) : default(MonadU);
 
         bool IPollutable<bool>.Pollute() => Condition;
 

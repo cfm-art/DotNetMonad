@@ -265,6 +265,10 @@ namespace CfmArt.Functional
         public Optional<U> Map<U>(Func<T, U> func)
             => HasValue ? Optional<U>.Just(func(Value)) : Optional<U>.Nothing;
 
+        public MonadU Bind<U, MonadU>(Func<T, MonadU> func)
+            where MonadU : IMonad<U>
+            => HasValue ? func(Value) : default(MonadU);
+
         T IPollutable<T>.Pollute() => HasValue ? Value : throw new InvalidOperationException("Optional is nothing");
         #endregion
     }
