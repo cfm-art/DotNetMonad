@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace MonadTest
 {
-    public class StateTaskTest
+    public class MaybeTaskTest
     {
         private static void Abort()
         {
@@ -36,7 +36,7 @@ namespace MonadTest
         public void Test_Awaitor1()
         {
             // 単一Task
-            var state = StateTask.From(DummyTask(10));
+            var state = MaybeTask.From(DummyTask(10));
             var result = state.Awaitor.Result;
             Assert.True(result.HasValue);
             Assert.Equal(10, Polluter.Pollute(result));
@@ -46,7 +46,7 @@ namespace MonadTest
         public void Test_Awaitor2()
         {
             // 2つのTaskを直列化
-            var state = StateTask
+            var state = MaybeTask
                             .From(DummyTask(10))
                             .Map(DummyTask(15));
             var result = state.Awaitor.Result;
@@ -60,7 +60,7 @@ namespace MonadTest
         {
             // 3つのTaskを直列化。
             // 結果はTuple<Tuple<1, 2>, 3>
-            var state = StateTask
+            var state = MaybeTask
                             .From(DummyTask(10))
                             .Map(DummyTask(15))
                             .Map(DummyTask(20));
@@ -76,7 +76,7 @@ namespace MonadTest
         {
             // 3つのTaskを直列化
             // 結果は自身で定義する。
-            var state = StateTask
+            var state = MaybeTask
                             .From(DummyTask(10))
                             .Map(async prev => (await DummyTask(15)).Map(next => (prev, next)))
                             .Map(async prev => (await DummyTask(20)).Map(next => (prev.Item1, prev.Item2, next)));
@@ -94,7 +94,7 @@ namespace MonadTest
             // 結果は自身で定義する。
             // Maybe a -> (a -> Task<Maybe (a b)>) -> Maybe (a b)は実装がわかりにくいので自動化
             // Maybe a -> (a -> Task<(a Maybe b)>) -> (a Maybe b)とならないように。
-            var state = StateTask
+            var state = MaybeTask
                             .From(DummyTask(10))
                             .Map(prev => DummyTask(15), (prev, next) => Optional.Just((prev, next)))
                             .Map(prev => DummyTask(20), (prev, next) => Optional.Just((prev.Item1, prev.Item2, next)));
@@ -109,7 +109,7 @@ namespace MonadTest
         public void Test_Nothing()
         {
             // Nothingを返すTaskはNothingになる
-            var state = StateTask
+            var state = MaybeTask
                             .From(NothingTask());
             var result = state.Awaitor.Result;
             Assert.False(result.HasValue);
@@ -119,7 +119,7 @@ namespace MonadTest
         public void Test_Nothing2()
         {
             // NothingをかえすTaskがある場合はNothingになる。
-            var state = StateTask
+            var state = MaybeTask
                             .From(DummyTask(10))
                             .Map(NothingTask());
             var result = state.Awaitor.Result;
@@ -135,7 +135,7 @@ namespace MonadTest
             // NothingをかえすTaskがある場合はNothingになる。
             // ※Nothingの前のTaskを返却する関数は実行される。
             // ※Nothingの後のTaskを返却する関数は実行されない。
-            var state = StateTask
+            var state = MaybeTask
                             .From(DummyTask(10))
                             .Map(prev => CallbackTask(() => {called1 = true; return 1;}))
                             .Map(NothingTask())
@@ -154,22 +154,22 @@ namespace MonadTest
             // (m >>= f) >>= g == m >>= (\x -> f x >>= g)
 
             {   // return x >>= f == f x
-                Func<int, StateTask<int>> func = i => StateTask.Return(DummyTask(i));
+                Func<int, MaybeTask<int>> func = i => MaybeTask.Return(DummyTask(i));
                 var result1 = func(10);
-                var result2 = StateTask.Return(DummyTask(10)).Bind(func);
+                var result2 = MaybeTask.Return(DummyTask(10)).Bind(func);
                 Assert.Equal(result1.Awaitor.Result, result2.Awaitor.Result);
             }
 
             {   // m >>= return == m
-                var result1 = StateTask.Return(DummyTask(10));
-                var result2 = result1.Bind(i => StateTask.Return(DummyTask(i)));
+                var result1 = MaybeTask.Return(DummyTask(10));
+                var result2 = result1.Bind(i => MaybeTask.Return(DummyTask(i)));
                 Assert.Equal(result1.Awaitor.Result, result2.Awaitor.Result);
             }
 
             {   // (m >>= f) >>= g == m >>= (\x -> f x >>= g)
-                Func<int, StateTask<int>> f = i => StateTask.Return(DummyTask(i + 1));
-                Func<int, StateTask<int>> g = i => StateTask.Return(DummyTask(i + 10));
-                var m = StateTask.Return(DummyTask(10));
+                Func<int, MaybeTask<int>> f = i => MaybeTask.Return(DummyTask(i + 1));
+                Func<int, MaybeTask<int>> g = i => MaybeTask.Return(DummyTask(i + 10));
+                var m = MaybeTask.Return(DummyTask(10));
 
                 var result1 = m.Bind(f).Bind(g);
                 var result2 = m.Bind(i => f(i).Bind(g));

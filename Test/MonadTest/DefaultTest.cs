@@ -33,10 +33,19 @@ public class DefaultTest
     }
 
     [Fact]
+    public void Test_DefaultMaybeTask()
+    {
+        var b = default(MaybeTask<int>);
+        var o = b.Awaitor.Result;
+        Assert.False(o.HasValue);
+    }
+
+
+    [Fact]
     public void Test_DefaultStateTask()
     {
         var b = default(StateTask<int>);
         var o = b.Awaitor.Result;
-        Assert.False(o.HasValue);
+        Assert.Equal(default(int), o);
     }
 }

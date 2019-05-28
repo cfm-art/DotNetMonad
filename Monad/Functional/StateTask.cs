@@ -5,70 +5,65 @@ namespace CfmArt.Functional
 {
     public class StateTask
     {
-        public static StateTask<T> Return<T>(Task<Optional<T>> task)
+        public static StateTask<T> Return<T>(Task<T> task)
             => new StateTask<T>(task);
 
-        public static StateTask<T> From<T>(Task<Optional<T>> task)
+        public static StateTask<T> From<T>(Task<T> task)
             => new StateTask<T>(task);
 
-        public static StateTask<T> Return<T>(Func<Task<Optional<T>>> task)
+        public static StateTask<T> Return<T>(Func<Task<T>> task)
             => new StateTask<T>(task());
 
-        public static StateTask<T> From<T>(Func<Task<Optional<T>>> task)
+        public static StateTask<T> From<T>(Func<Task<T>> task)
             => new StateTask<T>(task());
     }
 
     /// <summary>
-    /// Optionalを返すTask用。
     /// ツライTaskをなんとかするためのもの。
     /// </summary>
     public struct StateTask<T>
         : IMonad<T>
     {
-        private Task<Optional<T>> awaitor_ { get; }
-        public Task<Optional<T>> Awaitor => awaitor_ ?? Task.FromResult(Optional<T>.Nothing);
+        private Task<T> awaitor_ { get; }
+        public Task<T> Awaitor => awaitor_ ?? Task.FromResult(default(T));
 
-        public StateTask(Task<Optional<T>> task)
+        public StateTask(Task<T> task)
         {
             awaitor_ = task;
         }
 
-        private async Task<Optional<(T, U)>> Next<U>(Task<Optional<U>> newState)
-            => await (await Awaitor).IfPresent(
-                    async current => (await newState).Map(next => (current, next)),
-                    () => Task.FromResult(Optional.Nothing<(T, U)>()));
+        private async Task<(T, U)> Next<U>(Task<U> newState)
+            => (await Awaitor, await newState);
 
         /// <summary>
-        /// Optionalを返すTaskをタプルに
+        /// 
         /// </summary>
-        public StateTask<(T, U)> Map<U>(Task<Optional<U>> newState)
+        public StateTask<(T, U)> Map<U>(Task<U> newState)
             => new StateTask<(T, U)>(Next(newState));
 
-        private async Task<Optional<U>> Next<U>(Func<T, Task<Optional<U>>> newState)
-            => await (await Awaitor).IfPresent(
-                    current => newState(current),
-                    () => Task.FromResult(Optional.Nothing<U>()));
+        private async Task<U> Next<U>(Func<T, Task<U>> newState)
+            => await newState(await Awaitor);
 
         /// <summary>
         /// Optionalを返すTaskを独自の形式へ
         /// </summary>
-        public StateTask<U> Map<U>(Func<T, Task<Optional<U>>> newState)
+        public StateTask<U> Map<U>(Func<T, Task<U>> newState)
             => new StateTask<U>(Next(newState));
 
-        private async Task<Optional<V>> Next<U, V>(
-                Func<T, Task<Optional<U>>> runState,
-                Func<T, U, Optional<V>> newState)
-            => (await (await Awaitor).IfPresent(
-                    async current => (await runState(current)).Map(next => (current, next)),
-                    () => Task.FromResult(Optional.Nothing<(T, U)>())))
-                .Bind(state => newState(state.Item1, state.Item2));
+        private async Task<V> Next<U, V>(
+                Func<T, Task<U>> runState,
+                Func<T, U, V> newState)
+        {
+            var current = await Awaitor;
+            return newState(current, await runState(current));
+        }
 
         /// <summary>
         /// ステートの更新と次のステートを分けたパターン
         /// </summary>
         public StateTask<V> Map<U, V>(
-                Func<T, Task<Optional<U>>> runState,
-                Func<T, U, Optional<V>> newState)
+                Func<T, Task<U>> runState,
+                Func<T, U, V> newState)
             => new StateTask<V>(Next(runState, newState));
 
         public StateTask<U> Bind<U>(Func<T, StateTask<U>> func)
@@ -78,7 +73,7 @@ namespace CfmArt.Functional
             => Map(t => ((StateTask<U>) func(t)).Awaitor);
 
         public IMonad<U> Fmap<U>(Func<T, U> func)
-            => Map(t => Task.FromResult(Optional.Maybe(func(t))));
+            => Map(t => Task.FromResult(func(t)));
 
         public MonadU Bind<U, MonadU>(Func<T, MonadU> func)
             where MonadU : IMonad<U>
