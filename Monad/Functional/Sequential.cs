@@ -3,6 +3,15 @@ using System.Threading.Tasks;
 
 namespace CfmArt.Functional
 {
+    public static class Sequential
+    {
+        public static Sequential<T, U> Continue<T, U>(T value, TypeMarker<U> _)
+            => new Sequential<T, U>(value);
+
+        public static Sequential<U, T> Break<U, T>(TypeMarker<U> _, T value)
+            => new Sequential<U, T>(value, false);
+    }
+
     public static class Sequential<U>
     {
         public static Sequential<T, U> Continue<T>(T value)
@@ -39,6 +48,9 @@ namespace CfmArt.Functional
         public Sequential<Suc, Err> Bind(Func<Suc, Sequential<Suc, Err>> func)
             => IsContinue ? func(Value) : this;
 
+        public Sequential<Next, Err> Bind<Next>(Func<Suc, Sequential<Next, Err>> func)
+            => IsContinue ? func(Value) : Sequential<Next>.Break(Error);
+
         public Sequential<Suc, Err> Bind(Func<Suc, Suc> func)
             => IsContinue ? Sequential<Err>.Continue(func(Value)) : this;
 
@@ -51,6 +63,9 @@ namespace CfmArt.Functional
 
         public Task<Sequential<Suc, Err>> BindAsync(Func<Suc, Task<Sequential<Suc, Err>>> func)
             => IsContinue ? func(Value) : Task.FromResult(this);
+
+        public Task<Sequential<Next, Err>> BindAsync<Next>(Func<Suc, Task<Sequential<Next, Err>>> func)
+            => IsContinue ? func(Value) : Task.FromResult(Sequential<Next>.Break(Error));
 
         public async Task<Sequential<Suc, Err>> BindAsync(Func<Suc, Task<Suc>> func)
             => IsContinue ? Sequential<Err>.Continue(await func(Value)) : this;
