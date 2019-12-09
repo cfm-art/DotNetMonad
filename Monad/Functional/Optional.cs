@@ -63,6 +63,7 @@ namespace CfmArt.Functional
         /// <returns></returns>
         public static Optional<T> Nothing { get; } = new Optional<T>(default(T), false);
 
+#if false
         /// <summary>
         /// 中身があれば処理を行う
         /// </summary>
@@ -89,6 +90,7 @@ namespace CfmArt.Functional
             }
             return new IfElseSentence.DoElse<U>();
         }
+#endif
 
         /// <summary>
         /// 中身がある時と無い時で処理を行う

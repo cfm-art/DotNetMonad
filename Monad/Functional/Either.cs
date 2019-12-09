@@ -41,6 +41,7 @@ namespace CfmArt.Functional
         , IEquatable<R>
         , IPollutable<R>
     {
+#if false
         #region if-else
         public interface RightSentence
         {
@@ -122,6 +123,7 @@ namespace CfmArt.Functional
             public U Else(Func<L, U> _) => Value;
         }
         #endregion
+#endif
 
         internal L LeftValue { get; }
         internal R RightValue { get; }
@@ -136,6 +138,7 @@ namespace CfmArt.Functional
         }
 
         #region if left
+#if false
         /// <summary>
         /// 中身があれば処理を行う
         /// </summary>
@@ -162,6 +165,7 @@ namespace CfmArt.Functional
             }
             return new DoRight<U>(RightValue);
         }
+#endif
 
         /// <summary>
         /// 中身がある時と無い時で処理を行う
@@ -186,6 +190,7 @@ namespace CfmArt.Functional
         #endregion
 
         #region if right
+#if false
         /// <summary>
         /// 中身があれば処理を行う
         /// </summary>
@@ -212,6 +217,7 @@ namespace CfmArt.Functional
             }
             return new DoLeft<U>(LeftValue);
         }
+#endif
 
         /// <summary>
         /// 中身がある時と無い時で処理を行う
