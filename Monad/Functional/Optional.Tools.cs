@@ -18,6 +18,15 @@ namespace CfmArt.Functional
         }
 
         /// <summary>
+        ///
+        /// </summary>
+        public static Optional<T> Do<T>(this Optional<T> self, Action<T> action)
+        {
+            if (self.HasValue) { action(Polluter.Pollute(self)); }
+            return self;
+        }
+
+        /// <summary>
         /// Maybeのリストから値を持つもののリストへ変換
         /// </summary>
         /// <typeparam name="U"></typeparam>
@@ -63,7 +72,7 @@ namespace CfmArt.Functional
         public static Optional<T> Maybe<T>(T value) => Optional<T>.Maybe(value);
 
         /// <summary>
-        /// nillではない
+        /// nullではない
         /// </summary>
         public static Optional<T> Just<T>(T value) => Optional<T>.Just(value);
 
@@ -76,5 +85,39 @@ namespace CfmArt.Functional
         /// null
         /// </summary>
         public static Optional<T> Nothing<T>() => Optional<T>.Nothing;
+
+        /// <summary>NothingをEitherのLeftへ</summary>
+        public static Either<U, T> NullToLeft<T, U>(this Optional<T> self, Func<U> onError)
+            => self.IfPresent(
+                v => Either<U, T>.Right(v),
+                () => onError());
+
+        public static Optional<(T, T2)> Join<T, T2>(
+            this Optional<T> o,
+            Func<Optional<T2>> f2)
+            => o.Bind(v1 => f2().Map(v2 => (v1, v2)));
+
+        public static Optional<(T, T2, T3)> Join<T, T2, T3>(
+            this Optional<T> o,
+            Func<Optional<T2>> f2,
+            Func<Optional<T3>> f3)
+            => o.Bind(v1 => f2().Bind(v2 => f3().Map(v3 => (v1, v2, v3))));
+
+        public static Optional<(T, T2, T3, T4)> Join<T, T2, T3, T4>(
+            this Optional<T> o,
+            Func<Optional<T2>> f2,
+            Func<Optional<T3>> f3,
+            Func<Optional<T4>> f4)
+            => o.Bind(v1 => f2().Bind(v2 => f3().Bind(v3 => f4().Map(v4 => (v1, v2, v3, v4)))));
+
+        public static Optional<(T, T2, T3)> Join<T, T2, T3>(
+            this Optional<(T, T2)> o,
+            Func<Optional<T3>> f3)
+            => o.Bind(v1 => f3().Map(v3 => (v1.Item1, v1.Item2, v3)));
+
+        public static Optional<(T, T2, T3, T4)> Join<T, T2, T3, T4>(
+            this Optional<(T, T2, T3)> o,
+            Func<Optional<T4>> f4)
+            => o.Bind(v1 => f4().Map(v4 => (v1.Item1, v1.Item2, v1.Item3, v4)));
     }
 }

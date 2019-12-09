@@ -5,6 +5,14 @@ namespace CfmArt.Functional
     public static class Monad
     {
         public static T Id<T>(T t) => t;
+
+        public static IMonad<T> Do<T>(this IMonad<T> monad, Action<T> action)
+            => monad.Bind(
+                v =>
+                {
+                    action(v);
+                    return monad;
+                });
     }
 
     /// <summary>

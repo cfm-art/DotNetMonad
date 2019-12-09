@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace CfmArt.Functional
 {
-    public static class Sequential
+    internal static class Sequential
     {
         public static Sequential<T, U> Continue<T, U>(T value, TypeMarker<U> _)
             => new Sequential<T, U>(value);
@@ -12,7 +12,7 @@ namespace CfmArt.Functional
             => new Sequential<U, T>(value, false);
     }
 
-    public static class Sequential<U>
+    internal static class Sequential<U>
     {
         public static Sequential<T, U> Continue<T>(T value)
             => new Sequential<T, U>(value);
@@ -21,7 +21,7 @@ namespace CfmArt.Functional
             => new Sequential<U, T>(value, false);
     }
 
-    public struct Sequential<Suc, Err>
+    internal struct Sequential<Suc, Err>
         : IMonad<Suc>
     {
         private bool IsContinue { get; }

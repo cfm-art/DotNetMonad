@@ -6,30 +6,6 @@ using CfmArt.Functional.Internal;
 
 namespace CfmArt.Functional
 {
-    public static class Either
-    {
-        public static Either<L, R> Return<L, R>(L left)
-            => Either<L, R>.Left(left);
-
-        public static Either<L, R> Return<L, R>(L left, TypeMarker<R> _)
-            => Either<L, R>.Left(left);
-
-        public static Either<L, R> Return<L, R>(TypeMarker<L> _, R right)
-            => Either<L, R>.Right(right);
-
-        public static Either<L, R> Return<L, R>(R right)
-            => Either<L, R>.Right(right);
-
-        public static Either<L, R> CherryPick<L, R>(this Either<L, R> self, Action<R> func)
-            => self.IfRight(
-                right => {
-                    func(right);
-                    return self;
-                },
-                _ => self
-            );
-    }
-
     /// <summary>
     /// either
     /// </summary>

@@ -17,7 +17,7 @@ namespace MonadTest
             var trueValue = Bool.True();
 
             var isCalled = false;
-            trueValue.When(() => {isCalled = true;}).Else(() => Abort());
+            trueValue.When(() => {isCalled = true;}, () => Abort());
             Assert.True(isCalled);
 
             var one = trueValue.When(() => 1, () => 0);
@@ -42,7 +42,7 @@ namespace MonadTest
             var falseValue = Bool.False();
 
             var isCalled = false;
-            falseValue.When(() => Abort()).Else(() => {isCalled = true;});
+            falseValue.When(() => Abort(), () => {isCalled = true;});
             Assert.True(isCalled);
 
             var one = falseValue.When(() => 0, () => 1);
@@ -74,7 +74,7 @@ namespace MonadTest
             var trueValue = Bool.Return(() => true);
 
             var isCalled = false;
-            trueValue.When(() => {isCalled = true;}).Else(() => Abort());
+            trueValue.When(() => {isCalled = true;}, () => Abort());
             Assert.True(isCalled);
 
             var one = trueValue.When(() => 1, () => 0);
@@ -99,7 +99,7 @@ namespace MonadTest
             var falseValue = Bool.Return(() => false);
 
             var isCalled = false;
-            falseValue.When(() => Abort()).Else(() => {isCalled = true;});
+            falseValue.When(() => Abort(), () => {isCalled = true;});
             Assert.True(isCalled);
 
             var one = falseValue.When(() => 0, () => 1);

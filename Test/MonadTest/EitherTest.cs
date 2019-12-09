@@ -20,12 +20,13 @@ namespace MonadTest
             {
                 Assert.True(_);
                 isCalled = true;
-            }).Else(_ => Abort());
+            }, _ => Abort());
             Assert.True(isCalled);
 
             isCalled = false;
-            left.IfRight(_ => Abort())
-                .Else(_ =>
+            left.IfRight(
+                _ => Abort(),
+                _ =>
                 {
                     Assert.True(_);
                     isCalled = true;
@@ -53,11 +54,13 @@ namespace MonadTest
             {
                 Assert.True(_);
                 return 1;
-            }).Else(_ => 0);
+            }
+            ,_ => 0);
             Assert.Equal(1, o);
 
-            o = left.IfRight(_ => 0)
-                .Else(_ =>
+            o = left.IfRight(
+                _ => 0,
+                _ =>
                 {
                     Assert.True(_);
                     return 1;
@@ -94,12 +97,14 @@ namespace MonadTest
             {
                 Assert.Equal(1, _);
                 isCalled = true;
-            }).Else(_ => Abort());
+            },
+            _ => Abort());
             Assert.True(isCalled);
 
             isCalled = false;
-            right.IfLeft(_ => Abort())
-                .Else(_ =>
+            right.IfLeft(
+                _ => Abort(),
+                _ =>
                 {
                     Assert.Equal(1, _);
                     isCalled = true;
@@ -127,11 +132,13 @@ namespace MonadTest
             {
                 Assert.Equal(1, _);
                 return 1;
-            }).Else(_ => 0);
+            }
+            ,_ => 0);
             Assert.Equal(1, o);
 
-            o = right.IfLeft(_ => 0)
-                .Else(_ =>
+            o = right.IfLeft(
+                _ => 0,
+                _ =>
                 {
                     Assert.Equal(1, _);
                     return 1;

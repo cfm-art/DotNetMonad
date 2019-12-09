@@ -63,6 +63,7 @@ namespace CfmArt.Functional
 
         bool IPollutable<bool>.Pollute() => Condition;
 
+#if false
         /// <summary>
         /// 条件が真なら処理を行う
         /// </summary>
@@ -91,6 +92,7 @@ namespace CfmArt.Functional
             }
             return new IfElseSentence.DoElse<U>();
         }
+#endif
 
         /// <summary>
         /// 条件分岐

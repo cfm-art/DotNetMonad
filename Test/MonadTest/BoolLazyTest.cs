@@ -18,7 +18,7 @@ namespace MonadTest
 
             var isCalled = false;
             // Bool.When().Else()で分岐
-            trueValue.When(() => {isCalled = true;}).Else(() => Abort());
+            trueValue.When(() => {isCalled = true;}, () => Abort());
             Assert.True(isCalled);
 
             // Bool.When(then:, elseThen:)で分岐。一時変数を作らない分こちらの方がパフォーマンスは良いはず。
@@ -46,7 +46,7 @@ namespace MonadTest
             var falseValue = BoolLazy.False();
 
             var isCalled = false;
-            falseValue.When(() => Abort()).Else(() => {isCalled = true;});
+            falseValue.When(() => Abort(), () => {isCalled = true;});
             Assert.True(isCalled);
 
             var one = falseValue.When(() => 0, () => 1);
@@ -83,7 +83,7 @@ namespace MonadTest
             });
 
             var isCalled = false;
-            trueValue.When(() => {isCalled = true;}).Else(() => Abort());
+            trueValue.When(() => {isCalled = true;}, () => Abort());
             Assert.True(isCalled);
 
             var one = trueValue.When(() => 1, () => 0);
@@ -113,7 +113,7 @@ namespace MonadTest
             });
 
             var isCalled = false;
-            falseValue.When(() => Abort()).Else(() => {isCalled = true;});
+            falseValue.When(() => Abort(), () => {isCalled = true;});
             Assert.True(isCalled);
 
             var one = falseValue.When(() => 0, () => 1);
