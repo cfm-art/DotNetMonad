@@ -87,10 +87,20 @@ namespace CfmArt.Functional
         public static Optional<T> Nothing<T>() => Optional<T>.Nothing;
 
         /// <summary>NothingをEitherのLeftへ</summary>
-        public static Either<U, T> NullToLeft<T, U>(this Optional<T> self, Func<U> onError)
+        public static Either<L, R> NullToLeft<T, L, R>(
+                this Optional<T> self,
+                Func<T, R> functor,
+                Func<L> nothing)
             => self.IfPresent(
-                v => Either<U, T>.Right(v),
-                () => onError());
+                    o => Either<L, R>.Right(functor(o)),
+                    () => Either<L, R>.Left(nothing()));
+
+        public static Either<L, T> NullToLeft<T, L>(
+                this Optional<T> self,
+                Func<L> nothing)
+            => self.IfPresent(
+                    o => Either<L, T>.Right(o),
+                    () => Either<L, T>.Left(nothing()));
 
         public static Optional<(T, T2)> Join<T, T2>(
             this Optional<T> o,
