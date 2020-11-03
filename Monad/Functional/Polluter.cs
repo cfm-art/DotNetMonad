@@ -2,13 +2,16 @@ using CfmArt.Functional.Internal;
 
 namespace CfmArt.Functional
 {
+    /// <summary></summary>
     public class EitherPolluter<L, R>
     {
         private Either<L, R> either_ { get; }
         internal EitherPolluter(Either<L, R> either) => either_ = either;
 
-        public L PolluteLeft() => either_.LeftValue;
-        public R PolluteRight() => either_.RightValue;
+        /// <summary></summary>
+        public L PolluteLeft() => either_.LeftValue!;
+        /// <summary></summary>
+        public R PolluteRight() => either_.RightValue!;
     }
 
     /// <summary>

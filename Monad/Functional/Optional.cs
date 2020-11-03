@@ -1,7 +1,5 @@
 using CfmArt.Functional.Internal;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace CfmArt.Functional
@@ -19,7 +17,7 @@ namespace CfmArt.Functional
         /// <summary>
         /// 中身を直接参照する
         /// </summary>
-        private T Value { get; }
+        private T? Value { get; }
 
         /// <summary>
         /// 中身があるかどうか
@@ -31,7 +29,7 @@ namespace CfmArt.Functional
         /// </summary>
         /// <param name="instance"></param>
         /// <param name="hasValue"></param>
-        private Optional(T instance, bool hasValue)
+        private Optional(T? instance, bool hasValue)
         {
             Value = instance;
             HasValue = hasValue;
@@ -52,7 +50,7 @@ namespace CfmArt.Functional
         /// </summary>
         /// <param name="instance"></param>
         /// <returns></returns>
-        internal static Optional<T> Maybe(T instance)
+        internal static Optional<T> Maybe(T? instance)
             => instance == null
                 ? Nothing
                 : new Optional<T>(instance, true);
@@ -99,7 +97,7 @@ namespace CfmArt.Functional
         /// <param name="elseThen"></param>
         public void IfPresent(Action<T> then, Action elseThen)
         {
-            if (HasValue) { then(Value); }
+            if (HasValue) { NullCheck.DoAction(Value, then); }
             else { elseThen(); }
         }
 
@@ -110,7 +108,7 @@ namespace CfmArt.Functional
         /// <param name="elseThen"></param>
         public U IfPresent<U>(Func<T, U> then, Func<U> elseThen)
             => HasValue
-                ? then(Value)
+                ? NullCheck.DoAction(Value, then)
                 : elseThen();
 
         /// <summary>
@@ -121,7 +119,7 @@ namespace CfmArt.Functional
         /// <returns></returns>
         public T OrElse<U>(U value)
             where U : T
-            => HasValue ? Value : value;
+            => HasValue ? NullCheck.DoAction(Value, Functional.Id) : value;
 
         /// <summary>
         /// 中身を代替を指定して取得
@@ -131,7 +129,7 @@ namespace CfmArt.Functional
         /// <returns></returns>
         public Optional<U> OrElse<U>(Optional<U> value)
             where U : T
-            => HasValue ? Optional<U>.Just((U)Value) : value;
+            => HasValue && value is U u ? Optional<U>.Just(u) : value;
 
         /// <summary>
         /// 中身を代替を指定して取得
@@ -141,7 +139,7 @@ namespace CfmArt.Functional
         /// <returns></returns>
         public T OrElse<U>(Func<U> value)
             where U : T
-            => HasValue ? Value : value();
+            => HasValue ? NullCheck.DoAction(Value, Functional.Id) : value();
 
         /// <summary>
         /// 中身を代替を指定して取得
@@ -151,14 +149,14 @@ namespace CfmArt.Functional
         /// <returns></returns>
         public Optional<U> OrElse<U>(Func<Optional<U>> value)
             where U : T
-            => HasValue ? Optional<U>.Just((U)Value) : value();
+            => HasValue && Value is U u ? Optional<U>.Just(u) : value();
 
 
         /// <summary>
         /// 変換
         /// </summary>
         /// <param name="optional"></param>
-        public static explicit operator T(Optional<T> optional) => optional.Value;
+        public static explicit operator T(Optional<T> optional) => NullCheck.DoAction(optional.Value, Functional.Id);
 
         /// <summary>
         /// 変換
@@ -183,7 +181,7 @@ namespace CfmArt.Functional
             // どちらかがnull
             if (!lhs.HasValue || !rhs.HasValue) { return false; }
 
-            return lhs.Value.Equals(rhs.Value);
+            return (lhs.Value is T v).Equals(rhs.Value);
         }
 
         /// <summary>
@@ -207,14 +205,14 @@ namespace CfmArt.Functional
         /// </summary>
         /// <returns></returns>
         public override string ToString()
-            => HasValue ? "Just " + Value.ToString() : "Nothing";
+            => HasValue && !(Value is null) ? "Just " + Value.ToString() : "Nothing";
 
         /// <summary>
         /// 比較
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj is Optional<T> optional)
             {
@@ -222,7 +220,7 @@ namespace CfmArt.Functional
             }
             if (obj is T raw)
             {
-                return HasValue ? Value.Equals(raw) : false;
+                return HasValue && !(Value is null) ? Value.Equals(raw) : false;
             }
             return false;
         }
@@ -240,8 +238,8 @@ namespace CfmArt.Functional
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
-        public bool Equals(T other)
-            => HasValue ? Value.Equals(other) : (other == null);
+        public bool Equals(T? other)
+            => HasValue && !(Value is null) ? Value.Equals(other) : (other == null);
 
         #region IMonad
         /// <summary>
@@ -251,38 +249,44 @@ namespace CfmArt.Functional
         /// <param name="func"></param>
         /// <returns></returns>
         public IMonad<U> Bind<U>(Func<T, IMonad<U>> func)
-            => HasValue ? func(Value) : Optional<U>.Nothing;
+            => HasValue && !(Value is null) ? func(Value) : Optional<U>.Nothing;
 
+        /// <summary>(>>=) :: m a -> (a -> m b) -> m b</summary>
         public Optional<U> Bind<U>(Func<T, Optional<U>> func)
-            => HasValue ? func(Value) : Optional<U>.Nothing;
+            => HasValue && !(Value is null) ? func(Value) : Optional<U>.Nothing;
 
+        /// <summary>(>>=) :: m a -> (a -> m b) -> m b</summary>
         public Task<IMonad<U>> BindAsync<U>(Func<T, Task<IMonad<U>>> func)
-            => HasValue ? func(Value) : Task.FromResult((IMonad<U>) Optional<U>.Nothing);
+            => HasValue && !(Value is null) ? func(Value) : Task.FromResult((IMonad<U>) Optional<U>.Nothing);
 
+        /// <summary>(>>=) :: m a -> (a -> m b) -> m b</summary>
         public Task<Optional<U>> BindAsync<U>(Func<T, Task<Optional<U>>> func)
-            => HasValue ? func(Value) : Task.FromResult(Optional<U>.Nothing);
+            => HasValue && !(Value is null) ? func(Value) : Task.FromResult(Optional<U>.Nothing);
 
         /// <summary>
-        /// fmap :: (a -> b) -> m a -> m b
+        /// 
         /// </summary>
         /// <typeparam name="U"></typeparam>
         /// <param name="func"></param>
         /// <returns></returns>
         public IMonad<U> Fmap<U>(Func<T, U> func)
-            => HasValue ? Optional<U>.Just(func(Value)) : Optional<U>.Nothing;
+            => HasValue && !(Value is null) ? Optional<U>.Just(func(Value)) : Optional<U>.Nothing;
 
+        /// <summary>fmap :: (a -> b) -> m a -> m b</summary>
         public Optional<U> Map<U>(Func<T, U> func)
-            => HasValue ? Optional<U>.Just(func(Value)) : Optional<U>.Nothing;
+            => HasValue && !(Value is null) ? Optional<U>.Just(func(Value)) : Optional<U>.Nothing;
 
+        /// <summary>(>>=) :: m a -> (a -> m b) -> m b</summary>
         public MonadU Bind<U, MonadU>(Func<T, MonadU> func)
-            where MonadU : IMonad<U>
-            => HasValue ? func(Value) : default(MonadU);
+            where MonadU : struct, IMonad<U>
+            => HasValue && !(Value is null) ? func(Value) : default(MonadU);
 
+        /// <summary>(>>=) :: m a -> (a -> m b) -> m b</summary>
         public Task<MonadU> BindAsync<U, MonadU>(Func<T, Task<MonadU>> func)
-            where MonadU : IMonad<U>
-            => HasValue ? func(Value) : Task.FromResult(default(MonadU));
+            where MonadU : struct, IMonad<U>
+            => HasValue && !(Value is null) ? func(Value) : Task.FromResult(default(MonadU));
 
-        T IPollutable<T>.Pollute() => HasValue ? Value : throw new InvalidOperationException("Optional is nothing");
+        T IPollutable<T>.Pollute() => HasValue && !(Value is null) ? Value : throw new InvalidOperationException("Optional is nothing");
         #endregion
     }
 }

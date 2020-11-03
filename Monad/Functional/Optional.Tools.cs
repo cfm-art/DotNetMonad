@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace CfmArt.Functional
 {
+    /// <summary></summary>
     public static class Optional
     {
         /// <summary>
@@ -36,11 +37,11 @@ namespace CfmArt.Functional
             => (from x in list where x.HasValue select Polluter.Pollute(x));
 
         /// <summary>
-        /// Maybe Task T -> Task Maybe T
+        /// Maybe Task T -&gt; Task Maybe T
         /// 
-        /// usecase: Optional<T> `bind` T -> Optioanl<Task<Optioanl<T>>>
+        /// usecase: Optional&lt;T&gt; `bind` T -> Optioanl&lt;Task&lt;Optioanl&lt;T&gt;&gt;&gt;
         /// Taskの中にOptionalが包まれている場合にMapなどでTaskが一生つきまとうため、Taskだけを剥がすためのユーティリティ。
-        /// var maybe = await Optional.Asynchronous(maybeTask); // :: Taskを剥がしOptional<T>へ
+        /// var maybe = await Optional.Asynchronous(maybeTask); // :: Taskを剥がしOptional&lt;T&gt;へ
         /// </summary>
         public static async Task<Optional<T>> Asynchronous<T>(Optional<Task<T>> maybeTask)
             => await maybeTask.IfPresent(
@@ -48,7 +49,7 @@ namespace CfmArt.Functional
                 () => Task.FromResult(Optional<T>.Nothing));
 
 #if false   // TODO; .Net Standard 2.1以降
-       public static async ValueTask<Optional<T>> Asynchronous<T>(Optional<ValueTask<T>> maybeTask)
+        public static async ValueTask<Optional<T>> Asynchronous<T>(Optional<ValueTask<T>> maybeTask)
             => await maybeTask.IfPresent(
                 async task => Optional.Maybe(await task),
                 () => ValueTask.FromResult(Optional<T>.Nothing));
@@ -69,7 +70,7 @@ namespace CfmArt.Functional
         /// <summary>
         /// nullかもしれない
         /// </summary>
-        public static Optional<T> Maybe<T>(T value) => Optional<T>.Maybe(value);
+        public static Optional<T> Maybe<T>(T? value) => Optional<T>.Maybe(value);
 
         /// <summary>
         /// nullではない
@@ -95,6 +96,7 @@ namespace CfmArt.Functional
                     o => Either<L, R>.Right(functor(o)),
                     () => Either<L, R>.Left(nothing()));
 
+        /// <summary></summary>
         public static Either<L, T> NullToLeft<T, L>(
                 this Optional<T> self,
                 Func<L> nothing)
@@ -102,17 +104,20 @@ namespace CfmArt.Functional
                     o => Either<L, T>.Right(o),
                     () => Either<L, T>.Left(nothing()));
 
+        /// <summary></summary>
         public static Optional<(T, T2)> Join<T, T2>(
             this Optional<T> o,
             Func<Optional<T2>> f2)
             => o.Bind(v1 => f2().Map(v2 => (v1, v2)));
 
+        /// <summary></summary>
         public static Optional<(T, T2, T3)> Join<T, T2, T3>(
             this Optional<T> o,
             Func<Optional<T2>> f2,
             Func<Optional<T3>> f3)
             => o.Bind(v1 => f2().Bind(v2 => f3().Map(v3 => (v1, v2, v3))));
 
+        /// <summary></summary>
         public static Optional<(T, T2, T3, T4)> Join<T, T2, T3, T4>(
             this Optional<T> o,
             Func<Optional<T2>> f2,
@@ -120,11 +125,13 @@ namespace CfmArt.Functional
             Func<Optional<T4>> f4)
             => o.Bind(v1 => f2().Bind(v2 => f3().Bind(v3 => f4().Map(v4 => (v1, v2, v3, v4)))));
 
+        /// <summary></summary>
         public static Optional<(T, T2, T3)> Join<T, T2, T3>(
             this Optional<(T, T2)> o,
             Func<Optional<T3>> f3)
             => o.Bind(v1 => f3().Map(v3 => (v1.Item1, v1.Item2, v3)));
 
+        /// <summary></summary>
         public static Optional<(T, T2, T3, T4)> Join<T, T2, T3, T4>(
             this Optional<(T, T2, T3)> o,
             Func<Optional<T4>> f4)

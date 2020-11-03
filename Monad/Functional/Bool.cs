@@ -18,27 +18,36 @@ namespace CfmArt.Functional
         private Bool(bool condition) => Condition = condition;
         private Bool(Func<bool> condition) => Condition = condition();
 
+        /// <summary>True</summary>
         public static Bool True() => new Bool(true);
+        /// <summary>True</summary>
         public static Bool False() => new Bool(false);
 
+        /// <summary>x -> m x</summary>
         public static Bool Return(bool condition) => new Bool(condition);
+        /// <summary>x -> M x</summary>
         public static Bool Return(Func<bool> condition) => new Bool(condition);
 
+        /// <summary>(>>=) :: m a -> (a -> m b) -> m b</summary>
         public IMonad<U> Bind<U>(Func<bool, IMonad<U>> func)
             => Condition ? func(true) : Optional<U>.Nothing;
 
+        /// <summary>(>>=) :: m a -> (a -> m b) -> m b</summary>
         public Task<IMonad<U>> BindAsync<U>(Func<bool, Task<IMonad<U>>> func)
             => Condition ? func(true) : Task.FromResult((IMonad<U>) Optional<U>.Nothing);
 
+        /// <summary>fmap :: (a -> b) -> m a -> m b</summary>
         public IMonad<U> Fmap<U>(Func<bool, U> func)
             => Condition ? func(true) : Optional<U>.Nothing;
 
+        /// <summary>(>>=) :: m a -> (a -> m b) -> m b</summary>
         public MonadU Bind<U, MonadU>(Func<bool, MonadU> func)
-            where MonadU : IMonad<U>
+            where MonadU : struct, IMonad<U>
             => Condition ? func(true) : default(MonadU);
 
+        /// <summary>(>>=) :: m a -> (a -> m b) -> m b</summary>
         public Task<MonadU> BindAsync<U, MonadU>(Func<bool, Task<MonadU>> func)
-            where MonadU : IMonad<U>
+            where MonadU : struct, IMonad<U>
             => Condition ? func(true) : Task.FromResult(default(MonadU));
 
         bool IPollutable<bool>.Pollute() => Condition;

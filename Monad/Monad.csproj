@@ -1,14 +1,20 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;netcoreapp3.1;net5.0</TargetFrameworks>
     <AssemblyName>Monad</AssemblyName>
     <PackageId>CfmArt.Functional.Monad</PackageId>
-    <PackageVersion>0.0.9</PackageVersion>
+    <PackageVersion>0.0.10</PackageVersion>
     <Authors>cfm-art</Authors>
     <Copyright>(c) cfm-art</Copyright>
     <Title>Monad</Title>
     <Description>We need Monad!</Description>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <LangVersion>9.0</LangVersion>
+    <NullableContextOptions>enable</NullableContextOptions>
+    <Nullable>enable</Nullable>
+    <Deterministic>true</Deterministic>
 
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/cfm-art/DotNetMonad</RepositoryUrl>

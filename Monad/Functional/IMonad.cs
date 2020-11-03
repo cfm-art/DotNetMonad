@@ -2,10 +2,13 @@ using System;
 
 namespace CfmArt.Functional
 {
+    /// <summary></summary>
     public static class Monad
     {
+        /// <summary></summary>
         public static T Id<T>(T t) => t;
 
+        /// <summary></summary>
         public static IMonad<T> Do<T>(this IMonad<T> monad, Action<T> action)
             => monad.Bind(
                 v =>
@@ -36,7 +39,7 @@ namespace CfmArt.Functional
         /// <param name="func"></param>
         /// <returns></returns>
         MonadU Bind<U, MonadU>(Func<T, MonadU> func)
-            where MonadU : IMonad<U>;
+            where MonadU : struct, IMonad<U>;
 
         /// <summary>
         /// fmap :: (a -> b) -> m a -> m b

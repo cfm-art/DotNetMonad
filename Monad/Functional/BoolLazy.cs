@@ -13,7 +13,7 @@ namespace CfmArt.Functional
         : IMonad<bool>
         , IPollutable<bool>
     {
-        private Func<bool> condition_ { get; set; }
+        private Func<bool>? condition_ { get; set; }
         private bool cache_;
 
         private bool Condition
@@ -38,27 +38,36 @@ namespace CfmArt.Functional
             condition_ = condition;
         }
 
+        /// <summary>true</summary>
         public static BoolLazy True() => new BoolLazy(true);
+        /// <summary>false</summary>
         public static BoolLazy False() => new BoolLazy(false);
 
+        /// <summary></summary>
         public static BoolLazy Return(bool condition) => new BoolLazy(condition);
+        /// <summary></summary>
         public static BoolLazy Return(Func<bool> condition) => new BoolLazy(condition);
 
+        /// <summary>(>>=) :: m a -> (a -> m b) -> m b</summary>
         public IMonad<U> Bind<U>(Func<bool, IMonad<U>> func)
             => Condition ? func(true) : Optional<U>.Nothing;
 
+        /// <summary>(>>=) :: m a -> (a -> m b) -> m b</summary>
         public Task<IMonad<U>> Bind<U>(Func<bool, Task<IMonad<U>>> func)
             => Condition ? func(true) : Task.FromResult((IMonad<U>) Optional<U>.Nothing);
 
+        /// <summary>map</summary>
         public IMonad<U> Fmap<U>(Func<bool, U> func)
             => Condition ? func(true) : Optional<U>.Nothing;
 
+        /// <summary>(>>=) :: m a -> (a -> m b) -> m b</summary>
         public MonadU Bind<U, MonadU>(Func<bool, MonadU> func)
-            where MonadU : IMonad<U>
+            where MonadU : struct, IMonad<U>
             => Condition ? func(true) : default(MonadU);
 
+        /// <summary>(>>=) :: m a -> (a -> m b) -> m b</summary>
         public Task<MonadU> Bind<U, MonadU>(Func<bool, Task<MonadU>> func)
-            where MonadU : IMonad<U>
+            where MonadU : struct, IMonad<U>
             => Condition ? func(true) : Task.FromResult(default(MonadU));
 
         bool IPollutable<bool>.Pollute() => Condition;

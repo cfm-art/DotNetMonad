@@ -1,4 +1,11 @@
-public class TypeMarker<T>
+namespace CfmArt.Functional
 {
-    public static TypeMarker<T> Type => null;
+    /// <summary></summary>
+    public class TypeMarker<T>
+    {
+        /// <summary></summary>
+        public static TypeMarker<T> Type => new();
+
+        private TypeMarker() {}
+    }
 }

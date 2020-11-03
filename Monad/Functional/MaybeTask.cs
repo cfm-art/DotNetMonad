@@ -3,17 +3,22 @@ using System.Threading.Tasks;
 
 namespace CfmArt.Functional
 {
+    /// <summary></summary>
     public class MaybeTask
     {
+        /// <summary></summary>
         public static MaybeTask<T> Return<T>(Task<Optional<T>> task)
             => new MaybeTask<T>(task);
 
+        /// <summary></summary>
         public static MaybeTask<T> From<T>(Task<Optional<T>> task)
             => new MaybeTask<T>(task);
 
+        /// <summary></summary>
         public static MaybeTask<T> Return<T>(Func<Task<Optional<T>>> task)
             => new MaybeTask<T>(task());
 
+        /// <summary></summary>
         public static MaybeTask<T> From<T>(Func<Task<Optional<T>>> task)
             => new MaybeTask<T>(task());
     }
@@ -26,8 +31,10 @@ namespace CfmArt.Functional
         : IMonad<T>
     {
         private Task<Optional<T>> awaitor_ { get; }
+        /// <summary></summary>
         public Task<Optional<T>> Awaitor => awaitor_ ?? Task.FromResult(Optional<T>.Nothing);
 
+        /// <summary></summary>
         public MaybeTask(Task<Optional<T>> task)
         {
             awaitor_ = task;
@@ -71,17 +78,22 @@ namespace CfmArt.Functional
                 Func<T, U, Optional<V>> newState)
             => new MaybeTask<V>(Next(runState, newState));
 
+        /// <summary></summary>
         public MaybeTask<U> Bind<U>(Func<T, MaybeTask<U>> func)
             => Map(t => func(t).Awaitor);
 
+        /// <summary></summary>
         public IMonad<U> Bind<U>(Func<T, IMonad<U>> func)
             => Map(t => ((MaybeTask<U>) func(t)).Awaitor);
 
+        /// <summary></summary>
         public IMonad<U> Fmap<U>(Func<T, U> func)
             => Map(t => Task.FromResult(Optional.Maybe(func(t))));
 
+        /// <summary></summary>
+        [Obsolete("Not Implemented.")]
         public MonadU Bind<U, MonadU>(Func<T, MonadU> func)
-            where MonadU : IMonad<U>
+            where MonadU : struct, IMonad<U>
             => throw new NotImplementedException();
     }
 }
